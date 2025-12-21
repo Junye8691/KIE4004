@@ -1,36 +1,53 @@
 import pandapower as pp
 import pandapower.networks as nw
-import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
-# 1. Load the Base Case (IEEE 33)
+# 1. Load System
 net = nw.case33bw()
+weakest_bus = 17 # Based on your previous run
 
-# 2. Run Base Case Simulation
-pp.runpp(net)
-base_loss = net.res_line.pl_mw.sum()
-base_min_vm = net.res_bus.vm_pu.min()
-weakest_bus = net.res_bus.vm_pu.idxmin() # Finds the bus ID with lowest voltage
+# 2. Sweep RE Capacities from 0 to 3 MW
+sizes = np.arange(0, 3.1, 0.2) # 0, 0.2, 0.4 ... 3.0
+losses = []
+voltages = []
 
-print(f"--- BASE CASE ---")
-print(f"Weakest Bus: {weakest_bus}")
-print(f"Min Voltage: {base_min_vm:.4f} p.u.")
-print(f"Total Loss:  {base_loss:.4f} MW")
+print(f"--- Optimizing RE Size at Bus {weakest_bus} ---")
+print(f"{'Size (MW)':<10} | {'Loss (MW)':<10} | {'Min Voltage':<10}")
 
-# 3. Integrate Renewable Energy (Solar PV)
-# We add a Static Generator (sgen) at the weakest bus
-# P_mw = 2.0 MW (Active Power), Q_mvar = 0 (Unity Power Factor)
-re_capacity = 2.0 
-pp.create_sgen(net, bus=weakest_bus, p_mw=re_capacity, q_mvar=0, name="Solar PV")
+for size in sizes:
+    # Reset net to remove old generator
+    net = nw.case33bw()
+    
+    # Add Generator
+    pp.create_sgen(net, bus=weakest_bus, p_mw=size, q_mvar=0)
+    
+    # Run PF
+    pp.runpp(net)
+    
+    # Store results
+    loss = net.res_line.pl_mw.sum()
+    v_min = net.res_bus.vm_pu.min()
+    
+    losses.append(loss)
+    voltages.append(v_min)
+    
+    print(f"{size:<10.1f} | {loss:<10.4f} | {v_min:<10.4f}")
 
-# 4. Run Simulation with RE
-pp.runpp(net)
-new_loss = net.res_line.pl_mw.sum()
-new_min_vm = net.res_bus.vm_pu.min()
+# 3. Find Optimal
+min_loss = min(losses)
+optimal_idx = losses.index(min_loss)
+optimal_size = sizes[optimal_idx]
 
-print(f"\n--- WITH {re_capacity} MW SOLAR PV AT BUS {weakest_bus} ---")
-print(f"Min Voltage: {new_min_vm:.4f} p.u. (Improved from {base_min_vm:.4f})")
-print(f"Total Loss:  {new_loss:.4f} MW (Reduced from {base_loss:.4f})")
+print(f"\nOPTIMAL SIZE: {optimal_size} MW (Min Loss: {min_loss:.4f} MW)")
 
-# 5. Check Improvement
-loss_reduction = ((base_loss - new_loss) / base_loss) * 100
-print(f"\nSystem Loss Reduced by: {loss_reduction:.2f}%")
+# 4. Plot (Save as image for report)
+plt.figure(figsize=(10, 5))
+plt.plot(sizes, losses, marker='o', label='System Losses')
+plt.axvline(optimal_size, color='r', linestyle='--', label=f'Optimal: {optimal_size} MW')
+plt.title(f'Impact of RE Size at Bus {weakest_bus} on System Losses')
+plt.xlabel('RE Capacity (MW)')
+plt.ylabel('Total Active Loss (MW)')
+plt.grid(True)
+plt.legend()
+plt.show()
