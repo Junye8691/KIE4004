@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:MATPOWER/mp-opt-model
+	branch = master
+	commit = 41789c034445bdfd98eefd9b4de022cdef2fcb4b
+	parent = bf62b95b6cb33a206c3480ebe91758f927c3335d
+	method = merge
+	cmdver = 0.4.9
