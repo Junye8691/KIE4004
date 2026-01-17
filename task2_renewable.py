@@ -40,7 +40,29 @@ def get_network(sys_name, verbose=False):
 
     return net
 
-def run_renewable_analysis(system="69", re_bus=64, max_re_mw=3.0, step=0.2):
+def calculate_vsi(net):
+    """
+    Calculates the Voltage Stability Index (VSI) for each bus.
+    VSI = |V_send|^4 - 4 * (P * X - Q * R)^2 - 4 * |V_send|^2 * (P * R + Q * X)
+    For radial systems, a simplified check is often used on branches.
+    Low VSI (near 0) = Unstable. High VSI (near 1) = Stable.
+    """
+    # EASIER ALTERNATIVE FOR PRESENTATION:
+    # Just calculate the "Voltage Deviation Index" (VDI)
+    # VDI = Sum((V_nominal - V_actual)^2)
+    v_nominal = 1.0
+    vdi = sum((v_nominal - net.res_bus.vm_pu)**2)
+    return vdi
+
+#case118
+#def run_renewable_analysis(system="118", re_bus=75, max_re_mw=500, step=25):
+
+#case33
+def run_renewable_analysis(system="33", re_bus=18, max_re_mw=3.5, step=0.2):
+    
+#case69
+#def run_renewable_analysis(system="69", re_bus=64, max_re_mw=3.0, step=0.2):
+
 
     # ================= CONFIG =================
     if system == "33":
@@ -68,19 +90,25 @@ def run_renewable_analysis(system="69", re_bus=64, max_re_mw=3.0, step=0.2):
     base_min_v = base_vm.min()
     base_min_bus = base_vm.idxmin()
     base_loss = net_base.res_line.pl_mw.sum()
+    base_vdi = calculate_vsi(net_base)
+    
 
     print("\n--- BASE CASE ---")
     print(f"Minimum Voltage : {base_min_v:.4f} p.u. at Bus {base_min_bus}")
     print(f"Base Case Total Loss : {base_loss:.4f} MW")
+    print(f"Stability (VDI) : {base_vdi:.4f} (Lower is better)")
 
 
     # ============ RE SIZE SWEEP ============
     sizes = np.arange(0, MAX_RE_MW + STEP, STEP)
     losses = []
     min_voltages = []
+    vdis = []
 
     print(f"\n--- Optimizing RE Size at Bus {WEAKEST_BUS} ({TARGET_SYSTEM}) ---")
-    print(f"{'Size (MW)':<10} | {'Loss (MW)':<10} | {'Min Voltage (p.u.)':<15} | {'Weakest Bus':<10}")
+    print(f"{'Size (MW)':<10} | {'Loss (MW)':<10} | {'Min V (p.u.)':<12} | {'Stability (VDI)':<15} | {'Rev Flow?'}")
+
+    
 
     for size in sizes:
         net = get_network(TARGET_SYSTEM, verbose=False)
@@ -95,21 +123,29 @@ def run_renewable_analysis(system="69", re_bus=64, max_re_mw=3.0, step=0.2):
         loss = net.res_line.pl_mw.sum()
         v_min = net.res_bus.vm_pu.min()
         v_min_bus = net.res_bus.vm_pu.idxmin()
+        vdi = calculate_vsi(net)
 
         losses.append(loss)
         min_voltages.append(v_min)
+        vdis.append(vdi)
 
-        print(f"{size:<10.1f} | {loss:<10.4f} | {v_min:<15.4f} | {v_min_bus}")
-
+        
+        
+        #Reverse Power Flow Calculation
+        p_slack = net.res_ext_grid.p_mw.sum()
+        reverse_flow = "YES" if p_slack < 0 else "No"
+        print(f"{size:<10.1f} | {loss:<10.4f} | {v_min:<12.4f} | {vdi:<15.4f} | {reverse_flow}")
 
     # ============ OPTIMAL SIZE ============
     optimal_idx = np.argmin(losses)
     optimal_size = sizes[optimal_idx]
     optimal_loss = losses[optimal_idx]
+    optimal_vdi = vdis[optimal_idx]
 
     print("\n======================================")
     print(f"OPTIMAL RE SIZE : {optimal_size:.1f} MW")
     print(f"MINIMUM LOSS   : {optimal_loss:.4f} MW")
+    print(f"STABILITY IMPRV : {base_vdi:.4f} -> {optimal_vdi:.4f} (VDI)")
     print("======================================")
 
 
