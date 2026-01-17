@@ -14,8 +14,9 @@ USAGE:
 # Select system size
 SYSTEM = "33"        # Options: "33", "69", "118"
 
-# Select task
-TASK = "loadflow"    # Options: "loadflow", "renewable", "fault"
+# Select tasks (can run multiple)
+TASKS = ["loadflow", "renewable", "fault"]  
+# Options: "loadflow", "renewable", "fault"
 
 # Load flow method (only used if TASK == "loadflow")
 METHOD = "ALL"        # Options: "NR", "FDLF", "ALL"
@@ -30,7 +31,7 @@ FAULT_TYPE = "LG"    # Options: "LG", "LL", "LLG"
 
 # Renewable settings (only used if TASK == "renewable")
 RE_BUS = 18
-RE_P_MW = 1.0
+MAX_RE_MW = 1.0
 
 # ============================================================
 # ===================== IMPORT SECTION =======================
@@ -57,26 +58,24 @@ def main():
     print("==============================================")
 
     print(f"System        : IEEE {SYSTEM}-Bus")
-    print(f"Selected Task : {TASK}")
+    print(f"Selected Task : {TASKS}")
 
-    if TASK == "loadflow":
-        print(f"Method        : {METHOD}")
-        print(f"Tolerance     : {TOL}")
-        print(f"Max Iter      : {MAX_ITER}")
-        run_loadflow()
+    for task in TASKS:
 
-    elif TASK == "renewable":
-        print(f"RE Bus        : {RE_BUS}")
-        print(f"RE Size (MW)  : {RE_P_MW}")
-        run_renewable()
+        if task == "loadflow":
+            print("\n>>> Running Load Flow Analysis")
+            run_loadflow()
 
-    elif TASK == "fault":
-        print(f"Fault Bus     : {FAULT_BUS}")
-        print(f"Fault Type   : {FAULT_TYPE}")
-        run_fault()
+        elif task == "renewable":
+            print("\n>>> Running Renewable Integration")
+            run_renewable()
 
-    else:
-        raise ValueError("Invalid TASK selected")
+        elif task == "fault":
+            print("\n>>> Running Fault Analysis")
+            run_fault()
+
+        else:
+            raise ValueError(f"Invalid task: {task}")
 
     print("\nSimulation completed successfully")
 
@@ -104,8 +103,9 @@ def run_renewable():
     re.run_renewable_analysis(
         system=SYSTEM,
         re_bus=RE_BUS,
-        re_p_mw=RE_P_MW
+        max_re_mw=MAX_RE_MW
     )
+
 
 
 def run_fault():
