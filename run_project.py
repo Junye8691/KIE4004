@@ -1,9 +1,5 @@
 """
 KIE4004 – Power System Project
-Master Runner Script (Live Demo Friendly)
-
-Author: Group KIE4004
-Role: Member 1 (Architect)
 
 USAGE:
 1. Edit PARAMETERS section only
@@ -22,7 +18,7 @@ SYSTEM = "33"        # Options: "33", "69", "118"
 TASK = "loadflow"    # Options: "loadflow", "renewable", "fault"
 
 # Load flow method (only used if TASK == "loadflow")
-METHOD = "NR"        # Options: "NR", "FDLF"
+METHOD = "ALL"        # Options: "NR", "FDLF", "ALL"
 
 # Numerical settings
 TOL = 1e-6
@@ -47,17 +43,17 @@ import os
 sys.path.append(os.path.join(os.getcwd(), "matpower"))
 
 # Import task modules
-import task_1_analysis as pf
-import task_2_renewable as re
-import task_3_faults as fault
+import task1_analysis as pf
+import task2_renewable as re
+import task3_faults as fault
 
 # ============================================================
 # ======================= MAIN LOGIC =========================
 # ============================================================
 
 def main():
-    print("\n==============================================")
-    print(" KIE4004 POWER SYSTEM PROJECT – MASTER RUNNER ")
+    print("\n")
+    print(" KIE4004 POWER SYSTEM PROJECT ")
     print("==============================================")
 
     print(f"System        : IEEE {SYSTEM}-Bus")
@@ -82,8 +78,7 @@ def main():
     else:
         raise ValueError("Invalid TASK selected")
 
-    print("\n✅ Simulation completed successfully")
-    print("==============================================\n")
+    print("\nSimulation completed successfully")
 
 
 # ============================================================
