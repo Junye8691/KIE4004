@@ -211,24 +211,24 @@ def run_fault_analysis(system, fault_bus, fault_type):
     V012_pu = V012 / V_base_phase
     Vabc_pu = Vabc / V_base_phase
 
-    # print("\n========================================================= TASK 3 – FAULT ANALYSIS =========================================================")
-    # print(f"Fault Type : {FAULT_TYPE.upper()}")
-    # print(f"Fault Bus  : {FAULT_BUS}")
+    print("\n========================================================= TASK 3 – FAULT ANALYSIS =========================================================")
+    print(f"Fault Type : {FAULT_TYPE.upper()}")
+    print(f"Fault Bus  : {FAULT_BUS}")
 
-    # print("\nSequence Impedances (Ohm)")
-    # print(f"Z0 = {Z0:.4f}, Z1 = {Z1:.4f}, Z2 = {Z2:.4f}")
+    print("\nSequence Impedances (Ohm)")
+    print(f"Z0 = {Z0:.4f}, Z1 = {Z1:.4f}, Z2 = {Z2:.4f}")
 
-    # print("\nSequence Currents (A)\t|\ttPhase Currents (A)\t|\tSequence Voltages (V)\t|\tPhase Voltages (V)")
-    # print(f"I0 = {I012[0]:.4f}\t|\tIa = {Iabc[0]:.4f}\t|\tV0 = {V012[0]:.4f}\t|\tVa = {Vabc[0]:.4f}")
-    # print(f"I1 = {I012[1]:.4f}\t|\tIb = {Iabc[1]:.4f}\t|\tV1 = {V012[1]:.4f}\t|\tVb = {Vabc[1]:.4f}")
-    # print(f"I2 = {I012[2]:.4f}\t|\tIc = {Iabc[2]:.4f}\t|\tV2 = {V012[2]:.4f}\t|\tVc = {Vabc[2]:.4f}")
+    print("\nSequence Currents (A)\t|\tPhase Currents (A)\t|\tSequence Voltages (V)\t|\tPhase Voltages (V)")
+    print(f"I0 = {I012[0]:.4f}\t|\tIa = {Iabc[0]:.4f}\t|\tV0 = {V012[0]:.4f}\t|\tVa = {Vabc[0]:.4f}")
+    print(f"I1 = {I012[1]:.4f}\t|\tIb = {Iabc[1]:.4f}\t|\tV1 = {V012[1]:.4f}\t|\tVb = {Vabc[1]:.4f}")
+    print(f"I2 = {I012[2]:.4f}\t|\tIc = {Iabc[2]:.4f}\t|\tV2 = {V012[2]:.4f}\t|\tVc = {Vabc[2]:.4f}")
 
-    # print("\nSequence Currents (pu)\t|\tPhase Currents (pu)\t|\tSequence Voltages (pu)\t|\tPhase Voltages (pu)")
-    # print(f"I0 = {I012_pu[0]:.4f}\t|\tIa = {Iabc_pu[0]:.4f}\t|\tV0 = {V012_pu[0]:.4f}\t|\tVa = {Vabc_pu[0]:.4f}")
-    # print(f"I1 = {I012_pu[1]:.4f}\t|\tIb = {Iabc_pu[1]:.4f}\t|\tV1 = {V012_pu[1]:.4f}\t|\tVb = {Vabc_pu[1]:.4f}")
-    # print(f"I2 = {I012_pu[2]:.4f}\t|\tIc = {Iabc_pu[2]:.4f}\t|\tV2 = {V012_pu[2]:.4f}\t|\tVc = {Vabc_pu[2]:.4f}")
+    print("\nSequence Currents (pu)\t|\tPhase Currents (pu)\t|\tSequence Voltages (pu)\t|\tPhase Voltages (pu)")
+    print(f"I0 = {I012_pu[0]:.4f}\t|\tIa = {Iabc_pu[0]:.4f}\t|\tV0 = {V012_pu[0]:.4f}\t|\tVa = {Vabc_pu[0]:.4f}")
+    print(f"I1 = {I012_pu[1]:.4f}\t|\tIb = {Iabc_pu[1]:.4f}\t|\tV1 = {V012_pu[1]:.4f}\t|\tVb = {Vabc_pu[1]:.4f}")
+    print(f"I2 = {I012_pu[2]:.4f}\t|\tIc = {Iabc_pu[2]:.4f}\t|\tV2 = {V012_pu[2]:.4f}\t|\tVc = {Vabc_pu[2]:.4f}")
 
-    # print("===========================================================================================================================================")
+    print("===========================================================================================================================================")
 
     # print("\nres_bus_sc columns:")
     # print(net.res_bus_sc.columns)

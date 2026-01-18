@@ -12,7 +12,7 @@ USAGE:
 # ============================================================
 
 # Select system size
-SYSTEM = "118"        # Options: "33", "69", "118"
+SYSTEM = "69"        # Options: "33", "69", "118"
 
 # Select tasks (can run multiple)
 TASKS = ["loadflow", "renewable", "fault"]  
