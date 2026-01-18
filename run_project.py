@@ -12,7 +12,7 @@ USAGE:
 # ============================================================
 
 # Select system size
-SYSTEM = "118"        # Options: "33", "69", "118"
+SYSTEM = "69"        # Options: "33", "69", "118"
 
 # Select tasks (can run multiple)
 TASKS = ["loadflow", "renewable", "fault"]  
@@ -30,8 +30,9 @@ FAULT_BUS = 18
 FAULT_TYPE = "LG"    # Options: "LG", "LL", "LLG"
 
 # Renewable settings (only used if TASK == "renewable")
-RE_BUS = 18
-MAX_RE_MW = 1.0
+RE_BUS = 64
+MAX_RE_MW = 3.0
+STEPS =  0.2
 
 # ============================================================
 # ===================== IMPORT SECTION =======================
@@ -108,7 +109,8 @@ def run_renewable():
     re.run_renewable_analysis(
         system=SYSTEM,
         re_bus=RE_BUS,
-        max_re_mw=MAX_RE_MW
+        max_re_mw=MAX_RE_MW,
+        step=STEPS
     )
 
 
