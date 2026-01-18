@@ -12,7 +12,7 @@ USAGE:
 # ============================================================
 
 # Select system size
-SYSTEM = "33"        # Options: "33", "69", "118"
+SYSTEM = "118"        # Options: "33", "69", "118"
 
 # Select tasks (can run multiple)
 TASKS = ["loadflow", "renewable", "fault"]  
@@ -46,7 +46,8 @@ sys.path.append(os.path.join(os.getcwd(), "matpower"))
 # Import task modules
 import task1_analysis as pf
 import task2_renewable as re
-import task3_faults as fault
+# import task3_faults as fault
+import task_3_cw as fault
 
 # ============================================================
 # ======================= MAIN LOGIC =========================
@@ -71,8 +72,12 @@ def main():
             run_renewable()
 
         elif task == "fault":
-            print("\n>>> Running Fault Analysis")
-            run_fault()
+            if SYSTEM == "118":
+                print("\n>>> Skip fault analysis for 118-bus systems")
+                continue 
+            else:
+                print("\n>>> Running Fault Analysis")
+                run_fault()
 
         else:
             raise ValueError(f"Invalid task: {task}")

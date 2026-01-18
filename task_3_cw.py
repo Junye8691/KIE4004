@@ -126,15 +126,15 @@ def get_thevenin_impedance_manual(net, fault_bus_idx):
     return Z_0_total, Z_1_total, Z_2_total
 
 def calc_sequence_currents(Ea, fault_type, Z0, Z1, Z2, Z_f=0):
-    if fault_type == "slg":                             
+    if fault_type == "LG":                             
         I = Ea / (Z0 + Z1 + Z2 + 3*Z_f)                 # eq (10.62) - L9
         return np.array([I, I, I])                      # eq (10.8) & eq (10.58)
 
-    elif fault_type == "ll":                            
+    elif fault_type == "LL":                            
         I1 = Ea / (Z1 + Z2 + Z_f)                       # eq (10.75) - L9
         return np.array([0, I1, -I1])                   # eq (10.76) - L9
 
-    elif fault_type == "dlg":
+    elif fault_type == "LLG":
         Z_eq = Z0 + 3*Z_f                               # Optional Definition          
         I1 = Ea / (Z1 + (Z2 * Z_eq) / (Z2 + Z_eq))      # eq (10.88) - L9
         I2 = (Ea - Z1 * I1) / Z2                        # eq (10.87W) - L9
@@ -148,9 +148,9 @@ def calc_sequence_voltages(Ea, Z0, Z1, Z2, I012):
     return np.array([V0, V1, V2])                       # eq (10.54) - L9
 
 def run_fault(net, fault_bus, fault_type):
-    if fault_type == "slg":
+    if fault_type == "LG":
         pp_fault = "1ph"
-    elif fault_type in ["ll", "dlg"]:
+    elif fault_type in ["LL", "LLG"]:
         pp_fault = "2ph"
     else:
         raise ValueError("Invalid fault type")
@@ -158,14 +158,9 @@ def run_fault(net, fault_bus, fault_type):
     sc.calc_sc(net, fault=pp_fault, bus=fault_bus, case="max")
     return net
 
-if __name__ == "__main__":
-
-    FAULT_BUS = 11
-    FAULT_TYPE = "slg"   # "slg", "ll", "dlg"
-    SYSTEM = "33"   # "33" or "69"
-
-    net = build_distribution_network(SYSTEM)
-    plot_network(net, fault_bus=FAULT_BUS)
+def run_fault_analysis(system, fault_bus, fault_type):
+    net = build_distribution_network(system)
+    plot_network(net, fault_bus=fault_bus)
     net = set_sc_parameters(net)
 
     # ---------------- BASE VALUES ----------------
@@ -173,7 +168,7 @@ if __name__ == "__main__":
     S_base_MVA = 10.0                               # choose a clean base (typical for distribution)
     S_base = S_base_MVA * 1e6                       # VA
 
-    vn_kv = net.bus.at[FAULT_BUS, 'vn_kv']
+    vn_kv = net.bus.at[fault_bus, 'vn_kv']
     V_base_LL = vn_kv * 1e3                         # line-line volts in V
     V_base_phase = V_base_LL / np.sqrt(3)
 
@@ -182,10 +177,10 @@ if __name__ == "__main__":
 
     Ea = c * V_base_phase                           # volts
 
-    net = run_fault(net, FAULT_BUS, FAULT_TYPE)
+    net = run_fault(net, fault_bus, fault_type)
 
     # Sequence networks
-    Z0, Z1, Z2 = get_thevenin_impedance_manual(net, FAULT_BUS)
+    Z0, Z1, Z2 = get_thevenin_impedance_manual(net, fault_bus)
 
     a = np.exp(1j * 2 * np.pi / 3)                  # eq (10.2) - L8
 
@@ -202,7 +197,7 @@ if __name__ == "__main__":
     ])
 
     # Fault currents
-    I012 = calc_sequence_currents(Ea, FAULT_TYPE, Z0, Z1, Z2)
+    I012 = calc_sequence_currents(Ea, fault_type, Z0, Z1, Z2)
     Iabc = A @ I012                                                 # eq (10.9) - L8
 
     # Fault voltages
@@ -238,10 +233,10 @@ if __name__ == "__main__":
     # print("\nres_bus_sc columns:")
     # print(net.res_bus_sc.columns)
 
-    rk_pp  = net.res_bus_sc.at[FAULT_BUS, "rk_ohm"]
-    xk_pp  = net.res_bus_sc.at[FAULT_BUS, "xk_ohm"]
-    rk0_pp = net.res_bus_sc.at[FAULT_BUS, "rk0_ohm"]
-    xk0_pp = net.res_bus_sc.at[FAULT_BUS, "xk0_ohm"]
+    rk_pp  = net.res_bus_sc.at[fault_bus, "rk_ohm"]
+    xk_pp  = net.res_bus_sc.at[fault_bus, "xk_ohm"]
+    rk0_pp = net.res_bus_sc.at[fault_bus, "rk0_ohm"]
+    xk0_pp = net.res_bus_sc.at[fault_bus, "xk0_ohm"]
 
     Z1_pp = complex(rk_pp,  xk_pp)
     Z0_pp = complex(rk0_pp, xk0_pp)
@@ -253,7 +248,7 @@ if __name__ == "__main__":
     print(f"Analytical Z0 = {Z0:.4f} ohm")
     print(f"Pandapower Z0 = {Z0_pp} ohm")
 
-    ikss_pp = net.res_bus_sc.at[FAULT_BUS, "ikss_ka"]
+    ikss_pp = net.res_bus_sc.at[fault_bus, "ikss_ka"]
     Ia_analytical_ka = np.abs(Iabc[0]) / 1000
 
     print("\n--- Fault Current Comparison ---")
@@ -261,10 +256,16 @@ if __name__ == "__main__":
     print(f"Pandapower ikss = {ikss_pp} kA")
     print(f"Difference      = {abs(Ia_analytical_ka - ikss_pp):.4f} kA")
 
-    # plt.bar(["Ia", "Ib", "Ic"], np.abs(Iabc))
-    # plt.ylabel("Fault Current (pu)")
-    # plt.title(f"{FAULT_TYPE.upper()} Fault at Bus {FAULT_BUS}")
-    # plt.grid(True)
-    # plt.show()
+# ================================= For individual task  ================================= 
+FAULT_BUS = 11
+FAULT_TYPE = "LG"   # Options: "LG", "LL", "LLG"
+SYSTEM = "33"   # "33" or "69"
+
+if __name__ == "__main__":
+        run_fault_analysis(
+        system=SYSTEM,
+        fault_bus=FAULT_BUS,
+        fault_type=FAULT_TYPE
+    )
 
 # Z_f = 0 pu (solid fault)
