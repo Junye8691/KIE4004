@@ -69,7 +69,7 @@ def calculate_vsi(net):
 #def run_renewable_analysis(system="118", re_bus=75, max_re_mw=500, step=25):
 
 #case33
-def run_renewable_analysis(system="33", re_bus=18, max_re_mw=3.5, step=0.2):
+def run_renewable_analysis(system="33", re_bus=17, max_re_mw=3.5, step=0.2):
     
 #case69
 #def run_renewable_analysis(system="69", re_bus=64, max_re_mw=3.0, step=0.2):
