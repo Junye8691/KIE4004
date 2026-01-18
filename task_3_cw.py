@@ -270,9 +270,9 @@ def run_fault_analysis(system, fault_bus, fault_type):
         print(f"Pandapower Z0 = {Z0_pp} ohm")
 
     if fault_type == "LG":
-        Ia_analytical_ka = np.abs(3*I012[0]) / 1000
+        Ia_analytical_ka = np.abs(Iabc[0]) / 1000
     elif fault_type == "LL":
-        Ia_analytical_ka = np.abs(np.sqrt(3)*I012[1]) / 1000
+        Ia_analytical_ka = np.abs(Iabc[1]) / 1000
     elif fault_type == "LLG":
         Ia_analytical_ka = np.abs(Iabc[1]+Iabc[2]) / 1000
 
