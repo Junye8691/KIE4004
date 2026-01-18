@@ -30,6 +30,18 @@ FAULT_BUS = 18
 FAULT_TYPE = "LG"    # Options: "LG", "LL", "LLG"
 
 # Renewable settings (only used if TASK == "renewable")
+
+# #case118
+# RE_BUS = 75
+# MAX_RE_MW = 500
+# STEPS = 25
+
+# #case33
+# RE_BUS = 18
+# MAX_RE_MW = 3.5
+# STEPS = 0.2
+
+#case69
 RE_BUS = 64
 MAX_RE_MW = 3.0
 STEPS =  0.2
