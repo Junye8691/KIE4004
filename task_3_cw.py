@@ -149,8 +149,8 @@ def calc_sequence_currents(Ea, fault_type, Z0, Z1, Z2, Z_f=0):
     elif fault_type == "LLG":
         Z_eq = Z0 + 3*Z_f                               # Optional Definition          
         I1 = Ea / (Z1 + (Z2 * Z_eq) / (Z2 + Z_eq))      # eq (10.88) - L9
-        I2 = (Ea - Z1 * I1) / Z2                        # eq (10.87W) - L9
-        I0 = (Ea - I1 * Z1) / Z_eq                      # eq (10.86) - L9  
+        I2 = -(Ea - Z1 * I1) / Z2                        # eq (10.87) - L9
+        I0 = -(Ea - I1 * Z1) / Z_eq                      # eq (10.86) - L9  
         return np.array([I0, I1, I2])                   # eq (10.8) - L8
 
 def calc_sequence_voltages(Ea, Z0, Z1, Z2, I012):           
@@ -162,12 +162,16 @@ def calc_sequence_voltages(Ea, Z0, Z1, Z2, I012):
 def run_fault(net, fault_bus, fault_type):
     if fault_type == "LG":
         pp_fault = "1ph"
-    elif fault_type in ["LL", "LLG"]:
+    elif fault_type == "LL":
         pp_fault = "2ph"
+    elif fault_type == "LLG":
+        print("DLG (2ph-g) fault not supported in pandapower. ")
+        pp_fault = None
     else:
         raise ValueError("Invalid fault type")
 
-    sc.calc_sc(net, fault=pp_fault, bus=fault_bus, case="max")
+    if pp_fault is not None:
+        sc.calc_sc(net, fault=pp_fault, bus=fault_bus, case="max")
     return net
 
 def run_fault_analysis(system, fault_bus, fault_type):
@@ -245,18 +249,17 @@ def run_fault_analysis(system, fault_bus, fault_type):
     print(f"I1 = {I012_pu[1]:.4f}\t|\tIb = {Iabc_pu[1]:.4f}\t|\tV1 = {V012_pu[1]:.4f}\t|\tVb = {Vabc_pu[1]:.4f}")
     print(f"I2 = {I012_pu[2]:.4f}\t|\tIc = {Iabc_pu[2]:.4f}\t|\tV2 = {V012_pu[2]:.4f}\t|\tVc = {Vabc_pu[2]:.4f}")
 
-    print("===========================================================================================================================================")
-
     print("\nres_bus_sc columns:")
     print(net.res_bus_sc.columns)
 
-    rk_pp  = net.res_bus_sc.at[fault_bus, "rk_ohm"]
-    xk_pp  = net.res_bus_sc.at[fault_bus, "xk_ohm"]
+    if fault_type == "LG" or fault_type == "LL":
+        rk_pp  = net.res_bus_sc.at[fault_bus, "rk_ohm"]
+        xk_pp  = net.res_bus_sc.at[fault_bus, "xk_ohm"]
 
-    Z1_pp = complex(rk_pp,  xk_pp)
-    print("\n--- Thevenin Impedance Comparison ---")
-    print(f"Analytical Z1 = {Z1:.4f} ohm")
-    print(f"Pandapower Z1 = {Z1_pp} ohm\n")
+        Z1_pp = complex(rk_pp,  xk_pp)
+        print("\n--- Thevenin Impedance Comparison ---")
+        print(f"Analytical Z1 = {Z1:.4f} ohm")
+        print(f"Pandapower Z1 = {Z1_pp} ohm\n")
 
     if fault_type == "LG":
         rk0_pp = net.res_bus_sc.at[fault_bus, "rk0_ohm"]
@@ -266,13 +269,22 @@ def run_fault_analysis(system, fault_bus, fault_type):
         print(f"Analytical Z0 = {Z0:.4f} ohm")
         print(f"Pandapower Z0 = {Z0_pp} ohm")
 
-    ikss_pp = net.res_bus_sc.at[fault_bus, "ikss_ka"]
-    Ia_analytical_ka = np.abs(Iabc[0]) / 1000
+    if fault_type == "LG":
+        Ia_analytical_ka = np.abs(3*I012[0]) / 1000
+    elif fault_type == "LL":
+        Ia_analytical_ka = np.abs(np.sqrt(3)*I012[1]) / 1000
+    elif fault_type == "LLG":
+        Ia_analytical_ka = np.abs(Iabc[1]+Iabc[2]) / 1000
 
     print("\n--- Fault Current Comparison ---")
     print(f"Analytical |Ia| = {Ia_analytical_ka:.4f} kA")
-    print(f"Pandapower ikss = {ikss_pp} kA")
-    print(f"Difference      = {abs(Ia_analytical_ka - ikss_pp):.4f} kA")
+
+    if fault_type == "LG" or fault_type == "LL":
+        ikss_pp = net.res_bus_sc.at[fault_bus, "ikss_ka"]
+        print(f"Pandapower ikss = {ikss_pp} kA")
+        print(f"Difference      = {abs(Ia_analytical_ka - ikss_pp):.4f} kA")
+
+    print("===========================================================================================================================================")
 
 # ================================= For individual task  ================================= 
 FAULT_BUS = 11
