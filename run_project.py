@@ -37,7 +37,7 @@ FAULT_TYPE = "LG"    # Options: "LG", "LL", "LLG"
 # STEPS = 25
 
 # #case33
-# RE_BUS = 18
+# RE_BUS = 17
 # MAX_RE_MW = 3.5
 # STEPS = 0.2
 
