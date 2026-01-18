@@ -7,6 +7,17 @@ import os
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+def save_figure(fig_name, task_folder):
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    save_dir = os.path.join(base_path, task_folder)
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    save_path = os.path.join(save_dir, fig_name)
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    print(f"[Saved] {save_path}")
+
 # =========================================
 
 def get_network(sys_name, verbose=False):
@@ -160,6 +171,10 @@ def run_renewable_analysis(system="33", re_bus=18, max_re_mw=3.5, step=0.2):
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
+    save_figure(
+    fig_name=f"RE Size Optimization at Bus {WEAKEST_BUS} ({TARGET_SYSTEM}).png",
+    task_folder="task2_results"
+    )
     plt.show(block=False)
 
 
@@ -194,6 +209,10 @@ def run_renewable_analysis(system="33", re_bus=18, max_re_mw=3.5, step=0.2):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
+    save_figure(
+    fig_name=f"Voltage Profile Comparison ({TARGET_SYSTEM}).png",
+    task_folder="task2_results"
+    )
     plt.show(block=False)
 
     plt.show()

@@ -10,6 +10,17 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+def save_figure(fig_name, task_folder):
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    save_dir = os.path.join(base_path, task_folder)
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    save_path = os.path.join(save_dir, fig_name)
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    print(f"[Saved] {save_path}")
+
 def build_distribution_network(system="33"):
     """
     system: "33" or "69"
@@ -44,7 +55,7 @@ def plot_network(net, fault_bus=None):
         # print(f"Highlighting Fault at Bus {fault_bus} in RED.")
 
     plot.simple_plot(net, 
-                     show_plot=True, 
+                     show_plot=False, 
                      bus_size=1.2, 
                      line_width=1.0, 
                      bus_color=bus_colors)
@@ -161,6 +172,11 @@ def run_fault(net, fault_bus, fault_type):
 def run_fault_analysis(system, fault_bus, fault_type):
     net = build_distribution_network(system)
     plot_network(net, fault_bus=fault_bus)
+    save_figure(
+    fig_name=f"network_fault_bus{fault_bus}_{system}.png",
+    task_folder="task3_results"
+    )
+    plt.show()
     net = set_sc_parameters(net)
 
     # ---------------- BASE VALUES ----------------
