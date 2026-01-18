@@ -1,0 +1,5 @@
+pandas >= 2.3.3
+pandapower >= 3.3.0
+matplotlib >= 3.9.3
+numpy >= 2.3.5
+matpowercaseframes >= 1.1.6

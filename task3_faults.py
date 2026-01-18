@@ -132,32 +132,33 @@ def calculate_manual_faults(net, fault_bus_idx, Z_f=0):
     """
     c = 1.1 
     vn_kv = net.bus.at[fault_bus_idx, 'vn_kv']
-    E_a = (c * vn_kv * 1000) / np.sqrt(3)
+    E_a = (c * vn_kv * 1000) / np.sqrt(3)    # --> how to calculate E_a?
     
     Z_0, Z_1, Z_2 = get_thevenin_impedance_manual(net, fault_bus_idx)
     
-    a = -0.5 + 1j * (np.sqrt(3)/2)
-    A_matrix = np.array([[1, 1, 1], 
+    # Here correct
+    a = -0.5 + 1j * (np.sqrt(3)/2)                  # eq (10.2) - L8
+    A_matrix = np.array([[1, 1, 1],                 # eq (10.10) - L8
                          [1, a**2, a], 
                          [1, a, a**2]])
 
     results = {}
 
     # --- SLG ---
-    I0 = E_a / (Z_0 + Z_1 + Z_2 + 3*Z_f)
-    Iabc = A_matrix @ np.array([I0, I0, I0])
-    results['LG'] = abs(Iabc[0]) / 1000
+    I0 = E_a / (Z_0 + Z_1 + Z_2 + 3*Z_f)            # eq (10.62) - L9
+    Iabc = A_matrix @ np.array([I0, I0, I0])        # eq (10.8) & eq (10.58)
+    results['LG'] = abs(Iabc[0]) / 1000             # in kA --> check a bit
 
     # --- LL ---
-    I1 = E_a / (Z_1 + Z_2 + Z_f)
-    Iabc = A_matrix @ np.array([0, I1, -I1])
+    I1 = E_a / (Z_1 + Z_2 + Z_f)                    # eq (10.75) - L9  
+    Iabc = A_matrix @ np.array([0, I1, -I1])        # eq (10.76) - L9
     results['LL'] = abs(Iabc[1]) / 1000
 
     # --- LLG ---
-    Z_eq_0 = Z_0 + 3*Z_f
-    I1 = E_a / (Z_1 + (Z_2 * Z_eq_0) / (Z_2 + Z_eq_0))
-    I0 = -(E_a - Z_1 * I1) / Z_eq_0
-    results['LLG'] = abs(3 * I0) / 1000
+    Z_eq_0 = Z_0 + 3*Z_f                                    # Optional Definition
+    I1 = E_a / (Z_1 + (Z_2 * Z_eq_0) / (Z_2 + Z_eq_0))      # eq (10.88) - L9
+    I0 = -(E_a - Z_1 * I1) / Z_eq_0                         # eq (10.86) - L9
+    results['LLG'] = abs(3 * I0) / 1000                     # eq (10.89) - L9
 
     return results
 

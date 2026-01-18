@@ -25,15 +25,16 @@ def build_distribution_network(system="33"):
     """
     system: "33" or "69"
     """
+    base_path = os.path.dirname(os.path.abspath(__file__))
     if system == "33":
         net = pn.case33bw()
+        # m_file_path = os.path.join(base_path, 'matpower', 'data', 'case33bw.m')
     elif system == "69":
-        base_path = os.path.dirname(os.path.abspath(__file__))
         m_file_path = os.path.join(base_path, 'matpower', 'data', 'case69.m')
 
         if not os.path.exists(m_file_path):
             raise FileNotFoundError(f"Missing file: {m_file_path}")
-
+        
         net = from_mpc(m_file_path, f_hz=50)
     else:
         raise ValueError("Unsupported system. Use '33 or '69'.")
@@ -171,12 +172,12 @@ def run_fault(net, fault_bus, fault_type):
 
 def run_fault_analysis(system, fault_bus, fault_type):
     net = build_distribution_network(system)
-    plot_network(net, fault_bus=fault_bus)
-    save_figure(
-    fig_name=f"network_fault_bus{fault_bus}_{system}.png",
-    task_folder="task3_results"
-    )
-    plt.show()
+    # plot_network(net, fault_bus=fault_bus)
+    # save_figure(
+    # fig_name=f"network_fault_bus{fault_bus}_{system}.png",
+    # task_folder="task3_results"
+    # )
+    # plt.show()
     net = set_sc_parameters(net)
 
     # ---------------- BASE VALUES ----------------
@@ -246,23 +247,24 @@ def run_fault_analysis(system, fault_bus, fault_type):
 
     print("===========================================================================================================================================")
 
-    # print("\nres_bus_sc columns:")
-    # print(net.res_bus_sc.columns)
+    print("\nres_bus_sc columns:")
+    print(net.res_bus_sc.columns)
 
     rk_pp  = net.res_bus_sc.at[fault_bus, "rk_ohm"]
     xk_pp  = net.res_bus_sc.at[fault_bus, "xk_ohm"]
-    rk0_pp = net.res_bus_sc.at[fault_bus, "rk0_ohm"]
-    xk0_pp = net.res_bus_sc.at[fault_bus, "xk0_ohm"]
 
     Z1_pp = complex(rk_pp,  xk_pp)
-    Z0_pp = complex(rk0_pp, xk0_pp)
-
     print("\n--- Thevenin Impedance Comparison ---")
     print(f"Analytical Z1 = {Z1:.4f} ohm")
     print(f"Pandapower Z1 = {Z1_pp} ohm\n")
 
-    print(f"Analytical Z0 = {Z0:.4f} ohm")
-    print(f"Pandapower Z0 = {Z0_pp} ohm")
+    if fault_type == "LG":
+        rk0_pp = net.res_bus_sc.at[fault_bus, "rk0_ohm"]
+        xk0_pp = net.res_bus_sc.at[fault_bus, "xk0_ohm"]
+
+        Z0_pp = complex(rk0_pp, xk0_pp)
+        print(f"Analytical Z0 = {Z0:.4f} ohm")
+        print(f"Pandapower Z0 = {Z0_pp} ohm")
 
     ikss_pp = net.res_bus_sc.at[fault_bus, "ikss_ka"]
     Ia_analytical_ka = np.abs(Iabc[0]) / 1000
